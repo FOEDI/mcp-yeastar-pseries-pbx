@@ -1,0 +1,21 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "data": {
+    "basic": {
+      "uid": "20260915100344A5466",
+      "time": "2026/09/15 10:03:44",
+      "call_type": "Inbound",
+      "call_from_name": "Client",
+      "call_from_number": "+33123456789",
+      "call_to_name": "SAV",
+      "call_to_number": "6402",
+      "last_status": "ANSWERED",
+      "call_duration": 320,
+      "routing_duration": 28,
+      "handling_duration": 292
+    },
+    "call_notes": {},
+    "timeline": [{"leg": 1, "time": "2026/09/15 10:03:44", "status": "ANSWERED", "call_from": "Client<+33123456789>", "call_to": "SAV<6402>", "call_duration": 300, "ring_duration": 8, "talk_duration": 292, "hold_duration": 0}]
+  }
+}

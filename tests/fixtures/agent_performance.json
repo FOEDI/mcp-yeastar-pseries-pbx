@@ -1,0 +1,22 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "queue_agent_performance_list": [{
+    "queue": "SAV",
+    "queue_num": "6402",
+    "queue_id": 3,
+    "detail": [{
+      "agent_name": "Madison Cooper",
+      "agent_number": "1004",
+      "total_calls": 240,
+      "answered_calls": 225,
+      "missed_calls": 15,
+      "average_waiting_time": 18,
+      "max_waiting_time": 90,
+      "answered_waiting_time": 4050,
+      "average_talking_time": 230,
+      "total_talking_time": 51750,
+      "missed_call_rate": 6.25
+    }]
+  }]
+}

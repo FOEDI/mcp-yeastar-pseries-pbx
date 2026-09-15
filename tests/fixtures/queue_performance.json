@@ -1,0 +1,28 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "total_number": 1,
+  "is_12hour": 0,
+  "queue_performance_list": [
+    {
+      "queue": "SAV",
+      "queue_num": "6402",
+      "total_calls": 1200,
+      "answered_calls": 1050,
+      "missed_calls": 150,
+      "abandoned_calls": 80,
+      "average_waiting_time": 28,
+      "average_talking_time": 240,
+      "max_waiting_time": 190,
+      "answered_rate": 87.5,
+      "missed_rate": 12.5,
+      "abandoned_rate": 6.67,
+      "sla": 81.2,
+      "average_server_time": 275,
+      "all_call_average_waiting_time": 34,
+      "answered_call_time": 252000,
+      "total_ring_time": 40800,
+      "answered_hold_time": 6300
+    }
+  ]
+}

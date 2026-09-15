@@ -1,0 +1,41 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "total_number": 2,
+  "data": [
+    {
+      "id": "67AE6498-7D80008A",
+      "uid": "20260915100344A5466",
+      "time": "2026/09/15 10:03:44",
+      "call_type": "Inbound",
+      "call_from": "Client<+33123456789>",
+      "call_from_name": "Client",
+      "call_from_number": "+33123456789",
+      "call_to": "SAV<6402>",
+      "call_to_name": "SAV",
+      "call_to_number": "6402",
+      "last_status": "ANSWERED",
+      "call_duration": 320,
+      "routing_duration": 28,
+      "handling_duration": 292,
+      "queues": [{"name": "SAV", "number": "6402", "status": "ANSWERED"}]
+    },
+    {
+      "id": "67AE6498-7D80008B",
+      "uid": "20260915101344A5467",
+      "time": "2026/09/15 10:13:44",
+      "call_type": "Inbound",
+      "call_from": "Anonymous<+33987654321>",
+      "call_from_name": "Anonymous",
+      "call_from_number": "+33987654321",
+      "call_to": "SAV<6402>",
+      "call_to_name": "SAV",
+      "call_to_number": "6402",
+      "last_status": "ABANDONED",
+      "call_duration": 45,
+      "routing_duration": 45,
+      "handling_duration": 0,
+      "queues": [{"name": "SAV", "number": "6402", "status": "ABANDONED"}]
+    }
+  ]
+}

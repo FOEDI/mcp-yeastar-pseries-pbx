@@ -1,0 +1,9 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "total_number": 2,
+  "queue_avg_wait_talk_time_list": [
+    {"time": 9, "avg_wait_time": 28, "avg_talk_time": 240, "all_call_avg_wait_time": 34, "answered_calls": 1050, "total_calls": 1200, "answered_waiting_time": 29400, "total_waiting_time": 40800, "total_talking_time": 252000},
+    {"time": 10, "avg_wait_time": 29, "avg_talk_time": 241, "all_call_avg_wait_time": 35, "answered_calls": 100, "total_calls": 120}
+  ]
+}

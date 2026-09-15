@@ -1,0 +1,10 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "total_number": 3,
+  "unreturn_miss_call_list": [
+    {"id": "m1", "time": "2026/09/15 10:00:00", "call_from": "Client<+331****6789>", "call_to": "SAV<6402>", "ring_duration": 30, "call_to_type": "Queue", "unreturn_status": 2, "miss_call_type": "no_answer", "src": "+331****6789", "srcname": "Client", "dst": "6402", "dstname": "SAV", "call_type": "Inbound"},
+    {"id": "m3", "time": "2026/09/15 10:30:00", "call_from": "Client<+331****6789>", "call_to": "SAV<6402>", "ring_duration": 10, "call_to_type": "Queue", "unreturn_status": 2, "miss_call_type": "busy", "src": "+331****6789", "srcname": "Client", "dst": "6402", "dstname": "SAV", "call_type": "Inbound"},
+    {"id": "m2", "time": "2026/09/15 11:00:00", "call_from": "Client<+339****4321>", "call_to": "SAV<6402>", "ring_duration": 15, "call_to_type": "Queue", "unreturn_status": 2, "miss_call_type": "abandoned", "src": "+339****4321", "srcname": "Client", "dst": "6402", "dstname": "SAV", "call_type": "Inbound"}
+  ]
+}

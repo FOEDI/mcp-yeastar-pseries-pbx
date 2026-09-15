@@ -1,0 +1,15 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "data": {
+    "device_name": "PBX",
+    "model_name": "P-Series Software Edition",
+    "sn": "3631A2124XXX",
+    "firmware_version": "83.23.0.123",
+    "system_time": "2026/09/15 10:30:00",
+    "up_time": 24852,
+    "system_date_format": "YYYY/MM/DD",
+    "system_time_format": "HH:mm:ss",
+    "timestamp": 1789468200
+  }
+}

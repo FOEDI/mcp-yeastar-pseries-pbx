@@ -1,0 +1,16 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "total_number": 1,
+  "queue_list": [
+    {
+      "id": 3,
+      "number": "6402",
+      "name": "SAV",
+      "ring_strategy": "ring_all",
+      "dynamic_agent_list": [{"text": "Leo Ball", "text2": "1000", "value": "73", "type": "extension"}],
+      "static_agent_list": [{"text": "Madison Cooper", "text2": "1004", "value": "96", "type": "extension"}],
+      "manager_list": [{"text": "Leo Ball", "text2": "1000", "value": "73", "type": "extension"}]
+    }
+  ]
+}
