@@ -16,6 +16,6 @@
       "handling_duration": 292
     },
     "call_notes": {},
-    "timeline": [{"leg": 1, "time": "2026/09/15 10:03:44", "status": "ANSWERED", "call_from": "Client<+33123456789>", "call_to": "SAV<6402>", "call_duration": 300, "ring_duration": 8, "talk_duration": 292, "hold_duration": 0}]
+    "timeline": [{"leg": 1, "time": "2026/09/15 10:03:44", "status": "ANSWERED", "call_from": "Client<+33123456789>", "call_to": "SAV<6402>", "call_duration": 300, "ring_duration": 8, "talk_duration": 292, "hold_duration": 0, "event_list": [{"event_id": "event-1", "event_name": "tried_contact", "event_type": "dial", "event_time": 0, "event_ts": "2026/09/15 10:03:44", "event_content": "{\"in\":\"desktop\",\"to_feature\":\"extension\"}"}, {"event_id": "event-2", "event_name": "hangup", "event_type": "operate", "event_time": 300, "event_ts": "2026/09/15 10:08:44", "event_content": "{\"from_feature\":\"extension\",\"via_operate\":\"sip\"}"}]}]
   }
 }

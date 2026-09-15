@@ -1,0 +1,22 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "total_number": 1,
+  "queue_agent_in_out_calls_list": [
+    {
+      "agent_name": "Agent One",
+      "agent_num": "1004",
+      "queue_answered_calls": 40,
+      "queue_talk_duration": 3600,
+      "outbound_calls": 12,
+      "outbound_answer_calls": 10,
+      "outbound_talk_duration": 900,
+      "total_calls": 52,
+      "total_duration": 4500,
+      "average_talk_duration": 90,
+      "average_waiting_duration": 18,
+      "average_hold_duration": 4,
+      "average_answered_server_duration": 112
+    }
+  ]
+}

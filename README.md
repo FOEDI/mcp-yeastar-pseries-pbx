@@ -19,16 +19,19 @@ All tools carry MCP annotations `readOnlyHint=true`, `destructiveHint=false`, an
 
 - `get_pbx_info` — model, firmware, PBX clock, and uptime.
 - `get_capabilities` — v1/v2 analytics support with an explicit probed, firmware, or documented basis.
-- `list_queues` — normalized queues and agent counts.
-- `list_agents` — queue agents deduplicated across static/dynamic memberships.
-- `get_call_stats` — aggregate call counts/durations. With `extension_ids`, uses the official Extension Call Statistics `total_call_count` and `abandoned_calls`; otherwise CDRs are aggregated locally and never returned to the LLM.
-- `get_queue_performance` — Queue Performance totals, rates, SLA, waiting and talking metrics.
-- `get_queue_wait_times` — Queue AVG Wait & Talk Time for one complete day, month, or year.
-- `get_agent_performance` — normalized per-agent metrics for one queue.
-- `get_missed_calls` — missed calls, excluding abandoned calls; masked by default.
-- `get_abandoned_calls` — abandoned calls; masked by default.
-- `get_calls` — bounded/paginated normalized CDR list; masked by default.
-- `get_call_details` — v2 CDR basic data and normalized timeline; masked by default.
+- `list_queues`, `list_agents` — queues and named queue agents.
+- `list_ivrs`, `list_extensions`, `list_ring_groups` — minimal read-only directories needed to discover report IDs; sensitive configuration fields are omitted.
+- `get_call_stats` — bounded aggregate call counts/durations. Official extension talking time and CDR `handling_duration` are exposed under distinct field names; source CDRs are never returned to the LLM.
+- `get_call_activity` — local hourly, daily, weekly, or monthly volume/status/direction aggregation, with configurable duration bands.
+- `get_extension_performance` — one named statistics/talk-time row per extension, optionally filtered by inbound, outbound, or internal traffic.
+- `get_queue_performance`, `get_queue_wait_times` — queue totals, rates, SLA, wait/talk metrics, and documented time buckets.
+- `get_agent_performance`, `get_agent_call_summary` — named per-agent queue performance and inbound/outbound/talk totals.
+- `get_ivr_analysis` — IVR press counts and destinations, with key filtering and first-keypress mode; complete detail retrieval and optional call examples are bounded.
+- `get_ring_group_stats` — ring-group totals and named member metrics.
+- `get_routing_analysis` — v2-only local counts for long routing, multi-leg calls, route changes, and loop candidates that require a repeated destination.
+- `get_contact_call_stats` — locally joins the Yeastar company directory to CDRs and returns contact-level aggregates rather than raw CDR rows.
+- `get_missed_calls`, `get_abandoned_calls`, `get_calls` — bounded call lists, masked by default; v2 call search also supports caller, called number, routing-duration, segment-count, and disconnect-party filters.
+- `get_call_details` — v2 CDR basic data, timeline legs, and documented top-level event metadata; opaque event payloads are never parsed or returned.
 
 Period arguments are inclusive ISO 8601 `start` and `end` values and must be naive PBX-local datetimes without a timezone offset. Timezone-aware values are rejected because the PBX API accepts display-formatted local times but exposes no timezone conversion contract.
 
@@ -41,7 +44,7 @@ src/yeastar_mcp/
 ├── doctor.py       # local/live read-only diagnostics
 ├── endpoints.py    # documented endpoint/version registry
 ├── models.py       # normalized MCP-facing Pydantic models
-├── server.py       # twelve explicit MCP tools, stdio only
+├── server.py       # 22 explicit MCP tools, stdio only
 ├── services.py     # reports, CDR aggregation, normalization, privacy
 └── settings.py     # YEASTAR_* environment configuration
 
@@ -77,6 +80,7 @@ YEASTAR_BASE_URL=https://192.168.1.50:8088
 YEASTAR_CLIENT_ID=replace-with-openapi-client-id
 YEASTAR_CLIENT_SECRET=replace-with-openapi-client-secret
 YEASTAR_VERIFY_SSL=true
+YEASTAR_ALLOW_RAW_NUMBERS=false
 ```
 
 `YEASTAR_BASE_URL` is the PBX web origin, without `/openapi`. Keep TLS verification enabled. For a private CA, install its CA certificate in the VM trust store. Set `YEASTAR_VERIFY_SSL=false` only as a temporary diagnostic on a trusted network.
@@ -171,16 +175,20 @@ Yeastar separates historical and current CDR/Call Report datasets after the CDR 
 
 Call Reports v2 begin at Software `83.21.0.117`, Appliance `37.21.0.117`, and Cloud `84.21.0.117`. Dedicated CDR v2 endpoints have later minimums: Software `83.23.0.123`, Appliance `37.23.0.123`, and Cloud `84.23.0.123`. `get_capabilities` identifies firmware-inferred results explicitly; unknown version formats are treated conservatively and should be confirmed by `doctor`.
 
-See [docs/yeastar-openapi.md](docs/yeastar-openapi.md) for exact paths, parameters used, report types, and source links.
+See [docs/yeastar-openapi.md](docs/yeastar-openapi.md) for exact paths, parameters used, report types, and source links. The complete mapping from the supplied Excel sheet to MCP tools, business-reference requirements, and explicit limits is in [docs/workbook-coverage.md](docs/workbook-coverage.md).
 
 ## Privacy model
 
-- Queue/agent/report tools return aggregate normalized values.
-- `get_call_stats` does not return its CDR input rows to Hermes.
-- `get_calls`, `get_missed_calls`, `get_abandoned_calls`, and `get_call_details` mask numbers unless `include_numbers=true` is explicitly requested.
-- Call lists are bounded to at most 1,000 records per tool call.
-- No recordings, audio, transcripts, call notes, PIN codes, IP addresses, or arbitrary raw payloads are exposed.
+- Queue, agent, IVR, contact, routing, activity, and report tools aggregate locally whenever record-level data is unnecessary.
+- Telephone numbers are masked and external caller/callee names are suppressed by default.
+- `include_numbers=true` is rejected at the MCP boundary unless the runtime also has `YEASTAR_ALLOW_RAW_NUMBERS=true`; both controls must be explicit.
+- Agent and internal extension names remain available for operational performance reports.
+- Company-contact results use `Contact <id>` pseudonyms unless raw identity disclosure is enabled.
+- Call/IVR examples, detail retrieval, directories, and local CDR scans have fixed limits and fail rather than returning silently incomplete statistics.
+- Opaque Yeastar `event_content`, recordings, audio, transcripts, call notes, PINs, account codes, IP addresses, and arbitrary raw payloads are never exposed.
 - No MCP network listener exists in V1.
+
+Only enable raw numbers in an approved reporting environment. A cloud LLM necessarily receives any raw values returned to it; use a local model if telephone identities must not leave the VM.
 
 ## Known limitations
 
@@ -192,7 +200,7 @@ See [docs/yeastar-openapi.md](docs/yeastar-openapi.md) for exact paths, paramete
 - CDR v1 does not support queue filtering; requests that specify `queue_ids` with `api_version="v1.0"` are rejected.
 - V2 CDR documentation is inconsistent about whether `queues` is an object or array; normalization accepts both and currently selects the first queue for the compact call model.
 - `get_call_details` is v2-only. Legacy v1 CDR has no equivalent documented detail/timeline endpoint.
-- PBX-local time is used; V1 does not infer a timezone name from Yeastar's display settings.
+- PBX-local time is used; response timestamps are parsed with the configured PBX date format, while V1 does not infer a timezone name from display settings.
 
 ## Official references
 

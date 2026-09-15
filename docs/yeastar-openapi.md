@@ -24,8 +24,16 @@ Sources: [Get Access Token](https://help.yeastar.com/en/p-series-software-editio
 - `GET /openapi/v1.0/queue/list`
   - Parameters: `page`, `page_size`, `sort_by=number`, `order_by=asc`.
   - Normalized: queues and static/dynamic queue agents.
+- `GET /openapi/v1.0/ivr/list`
+  - Minimal normalized fields: ID, number, and name; required to discover IVR report IDs.
+- `GET /openapi/v1.0/extension/list`
+  - Minimal normalized fields: ID, number, and name. Online endpoints, IP addresses, email, mobile, and role data are omitted.
+- `GET /openapi/v1.0/ringgroup/list`
+  - Minimal normalized fields: ID, number, and name; required to discover Ring Group report IDs.
+- `GET /openapi/v1.0/company_contact/list`
+  - Used only for local number-to-contact matching. The MCP returns aggregate contact statistics; names/companies are pseudonymized unless raw disclosure is explicitly enabled.
 
-Sources: [PBX Information](https://help.yeastar.com/en/p-series-software-edition/developer-guide/query-pbx-information.html), [Queue List](https://help.yeastar.com/en/p-series-software-edition/developer-guide/query-queue-list.html).
+Sources: [PBX Information](https://help.yeastar.com/en/p-series-software-edition/developer-guide/query-pbx-information.html), [Queue List](https://help.yeastar.com/en/p-series-software-edition/developer-guide/query-queue-list.html), [IVR List](https://help.yeastar.com/en/p-series-software-edition/developer-guide/query-ivr-list.html), [Extension List](https://help.yeastar.com/en/p-series-software-edition/developer-guide/query-extension-list.html), [Ring Group List](https://help.yeastar.com/en/p-series-software-edition/developer-guide/query-ring-group-list.html), [Company Contacts](https://help.yeastar.com/en/p-series-software-edition/developer-guide/query-company-contacts-list.html).
 
 ### Call Reports (v1.0 or v2.0)
 
@@ -34,33 +42,43 @@ Sources: [PBX Information](https://help.yeastar.com/en/p-series-software-edition
 Report types used:
 
 - `extcallstatistics`
-  - `start_time`, `end_time`, required `ext_id_list`.
-  - Fields normalized: official `total_call_count`, answered, no-answer/missed, `abandoned_calls`, busy, failed, voicemail, and talking time.
+  - `start_time`, `end_time`, required `ext_id_list`; optional documented `communication_type`.
+  - Fields normalized per extension: official `total_call_count`, answered, no-answer/missed, `abandoned_calls`, busy, failed, voicemail, hold, and talking time.
 - `queueperformance`
   - `start_time`, `end_time`, required `queue_id_list`; optional `abandon_time`.
-  - Fields normalized: total/answered/missed/abandoned, average/max waits, average/total talk, hold, answer/miss/abandon rates, SLA, v1 `average_handle_time` or v2 `average_server_time`.
+  - Fields normalized: total/answered/missed/abandoned, average/max waits, official answered/all-call cumulative waits (`answered_waiting_time`, `total_waiting_time`), average/total talk, hold, answer/miss/abandon rates, SLA, v1 `average_handle_time` or v2 `average_server_time`.
 - `queueavgwaittalktime`
   - required `time` (complete day `YYYY/MM/DD`, month `YYYY/MM`, or year `YYYY`, reordered to the PBX date display format) and required `queue_id_list`.
   - Fields normalized: total/answered calls, answered/all-call average waits, average talk, and each response row's `time` as a distinct naive PBX-local hour/day/month bucket start.
 - `queueagentperformance`
   - `start_time`, `end_time`, required `queue_id`; optional `agent_id_list`, `abandon_time`.
   - Fields normalized per nested agent detail. Membership is `unknown` because this response does not identify static or dynamic membership.
+- `queueagentinoutcalls`
+  - Returns one named queue agent row with queue-answered, inbound/outbound, answered, duration, and hold totals.
+- `ringgroupstatistics`
+  - Required `ring_group_id_list`; returns ring-group totals/rates and named per-member answered-call totals.
+- `ivr`
+  - Required `ivr_id_list`; normalizes keypress counters including digits, invalid, timeout, star/hash, and preserves unknown counter labels. Detail rows can be filtered by key after optional chronological first-keypress selection; completeness and a fixed 10,000-row ceiling are enforced locally.
 - `unreturnmisscall`
   - `start_time`, `end_time`; optional documented `miss_call_type` including `no_answer`, `busy`, `abandoned`.
   - The API does not document paging for this report, so pagination is applied locally after retrieval.
 
 Source: [Query Call Report Statistics](https://help.yeastar.com/en/p-series-software-edition/developer-guide/query-call-report-list.html).
 
+`GET /openapi/{version}/call_report/detail` is used only for bounded IVR analysis. The MCP aggregates documented press/destination rows locally and returns caller examples only when explicitly requested. It does not expose the full report payload.
+
+Source: [Query Call Report Detail](https://help.yeastar.com/en/p-series-software-edition/developer-guide/query-call-report-detail.html).
+
 ### CDR
 
 - `GET /openapi/v2.0/cdr/search`
-  - `page`, `page_size` (documented max 10,000; MCP max 1,000), `time_begin`, `time_end`, `order_by=desc`, `sort_by=time`, optional `queue_list`, `last_status`.
-  - V2 fields: `uid`, `time`, `call_type`, `last_status`, parties, queues, `call_duration`, `routing_duration`, `handling_duration`.
+  - `page`, `page_size` (MCP max 1,000), `time_begin`, `time_end`, `order_by=desc`, `sort_by=time`; optional `queue_list`, `last_status`, `call_from`, `call_to`, `routing_duration`, `segments`, and `disconnected_by`.
+  - Normalized v2 fields include first/second/last participants, all queue/IVR/ring-group/call-flow/DID references, segment count, disconnect party, and distinct call/routing/handling durations. Numbers remain masked by default.
 - `GET /openapi/v1.0/cdr/search`
   - `page`, `page_size`, `start_time`, `end_time`, optional legacy `status`. It does not send v2-only `order_by` or `queue_list`; queue filters are rejected for v1.
   - V1 fields are normalized from `duration`, `ring_duration`, `talk_duration`, `disposition`.
 - `GET /openapi/v2.0/cdr/detail?uid=...`
-  - Normalizes `basic` and each timeline leg. Call notes and unrelated raw fields are intentionally omitted.
+  - Normalizes `basic`, each timeline leg, and only documented top-level event metadata (`event_id`, name, type, elapsed time, timestamp). Opaque `event_content`, call notes, and unrelated raw fields are intentionally omitted.
 - `GET /openapi/{v1.0|v2.0}/cdr/list?page=1&page_size=1`
   - Used by `doctor` only as a minimal read probe.
 

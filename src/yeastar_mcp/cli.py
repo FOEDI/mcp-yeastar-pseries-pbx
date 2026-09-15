@@ -23,7 +23,9 @@ def _parser() -> argparse.ArgumentParser:
 def _serve() -> None:
     settings = Settings()
     client = YeastarClient(settings)
-    create_server(YeastarService(client)).run(transport="stdio")
+    create_server(YeastarService(client, allow_raw_numbers=settings.allow_raw_numbers)).run(
+        transport="stdio"
+    )
 
 
 def main() -> None:

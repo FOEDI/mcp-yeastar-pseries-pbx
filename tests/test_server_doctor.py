@@ -7,6 +7,7 @@ from mcp import Client, StdioServerParameters
 
 from yeastar_mcp.doctor import run_doctor
 from yeastar_mcp.server import TOOL_NAMES, create_server
+from yeastar_mcp.services import YeastarService
 from yeastar_mcp.settings import Settings
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +23,50 @@ async def test_mcp_exposes_exact_read_only_tool_surface() -> None:
     assert all(not name.startswith(("create_", "update_", "delete_", "set_")) for name in names)
     assert all(tool.annotations and tool.annotations.read_only_hint for tool in listed.tools)
     assert all(tool.annotations and not tool.annotations.destructive_hint for tool in listed.tools)
+
+
+@pytest.mark.anyio
+async def test_analysis_tools_expose_duration_and_privacy_controls() -> None:
+    server = create_server(AsyncMock())
+    async with Client(server, raise_exceptions=True) as client:
+        listed = await client.list_tools()
+    tools = {tool.name: tool for tool in listed.tools}
+    activity = tools["get_call_activity"].input_schema["properties"]
+    assert {"duration_band_seconds", "duration_cap_seconds", "max_records"} <= set(activity)
+    assert activity["max_records"]["maximum"] == 100_000
+    routing = tools["get_routing_analysis"].input_schema["properties"]
+    contact = tools["get_contact_call_stats"].input_schema["properties"]
+    assert routing["max_records"]["maximum"] == 100_000
+    assert contact["max_records"]["maximum"] == 100_000
+    ivr = tools["get_ivr_analysis"].input_schema["properties"]
+    assert {
+        "include_calls",
+        "include_numbers",
+        "max_call_examples",
+        "keys",
+        "first_keypress_only",
+    } <= set(ivr)
+    assert ivr["max_call_examples"]["maximum"] == 100
+    calls = tools["get_calls"].input_schema["properties"]
+    assert {"call_from", "call_to", "routing_duration", "segments", "disconnected_by"} <= set(calls)
+
+
+@pytest.mark.anyio
+async def test_server_blocks_raw_numbers_unless_runtime_opted_in() -> None:
+    read_client = AsyncMock()
+    service = YeastarService(read_client)
+    server = create_server(service)
+    async with Client(server) as client:
+        result = await client.call_tool(
+            "get_calls",
+            {
+                "start": "2026-09-01T00:00:00",
+                "end": "2026-09-02T00:00:00",
+                "include_numbers": True,
+            },
+        )
+    assert result.is_error is True
+    assert read_client.get.await_count == 0
 
 
 @pytest.mark.asyncio
@@ -79,7 +124,7 @@ async def test_doctor_routes_report_and_cdr_probes_independently(
                     }
                 }
             if endpoint == "queue/list":
-                return {"queue_list": []}
+                return {"total_number": 0, "queue_list": []}
             return {}
 
     monkeypatch.setattr("yeastar_mcp.doctor.YeastarClient", FakeClient)

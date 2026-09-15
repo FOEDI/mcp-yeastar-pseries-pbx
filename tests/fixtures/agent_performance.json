@@ -1,6 +1,7 @@
 {
   "errcode": 0,
   "errmsg": "SUCCESS",
+  "total_number": 1,
   "queue_agent_performance_list": [{
     "queue": "SAV",
     "queue_num": "6402",

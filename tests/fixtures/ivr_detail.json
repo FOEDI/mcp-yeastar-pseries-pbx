@@ -1,0 +1,40 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "total_number": 3,
+  "ivr_report_detail": [
+    {
+      "id": "call-1",
+      "time": "2026/09/15 10:00:00",
+      "call_from": "Client A<+33123456789>",
+      "press": "1",
+      "destination": "Sales<6401>",
+      "call_to": "Sales<6401>",
+      "opr_duration": 8,
+      "ivr_num": "6500",
+      "destination_type": "Queue"
+    },
+    {
+      "id": "call-2",
+      "time": "2026/09/15 10:05:00",
+      "call_from": "Client B<+33987654321>",
+      "press": "1",
+      "destination": "Sales<6401>",
+      "call_to": "Sales<6401>",
+      "opr_duration": 12,
+      "ivr_num": "6500",
+      "destination_type": "Queue"
+    },
+    {
+      "id": "call-3",
+      "time": "2026/09/15 10:10:00",
+      "call_from": "Client C<+33111222333>",
+      "press": "2",
+      "destination": "Support<6402>",
+      "call_to": "Support<6402>",
+      "opr_duration": 15,
+      "ivr_num": "6500",
+      "destination_type": "Queue"
+    }
+  ]
+}

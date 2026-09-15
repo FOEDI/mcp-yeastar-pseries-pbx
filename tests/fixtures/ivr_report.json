@@ -1,0 +1,12 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "total_number": 1,
+  "ivr_list": [
+    {
+      "ivr_name": "Main IVR",
+      "ivr_num": "6500",
+      "press_count": {"press_1": 2, "press_2": 1, "press_timeout": 1}
+    }
+  ]
+}

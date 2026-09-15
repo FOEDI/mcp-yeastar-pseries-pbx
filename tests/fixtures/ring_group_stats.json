@@ -1,0 +1,17 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "total_number": 1,
+  "ring_group_statistics_list": [
+    {
+      "group_name": "Support Backup",
+      "group_num": "6300",
+      "answered_calls": 80,
+      "total_calls": 100,
+      "member_list": [
+        {"ext_name": "Agent One", "ext_num": "1004", "answered_calls": 50, "total_calls": 100},
+        {"ext_name": "Agent Two", "ext_num": "1005", "answered_calls": 30, "total_calls": 100}
+      ]
+    }
+  ]
+}

@@ -167,4 +167,4 @@ async def test_rejected_refresh_falls_back_to_client_credentials_once(settings: 
 async def test_client_rejects_get_outside_documented_allowlist(settings: Settings) -> None:
     async with YeastarClient(settings) as client:
         with pytest.raises(ValueError, match="not an allowed read endpoint"):
-            await client.get("extension/list")
+            await client.get("extension/getpassword")

@@ -1,0 +1,22 @@
+{
+  "errcode": 0,
+  "errmsg": "SUCCESS",
+  "total_number": 2,
+  "data": [
+    {
+      "id": 3,
+      "contact_name": "Client A",
+      "company": "Customer Co",
+      "business": "+33123456789",
+      "mobile": "+33611112222",
+      "phonebook_list": [{"id": 5, "name": "Key Clients"}]
+    },
+    {
+      "id": 4,
+      "contact_name": "Client B",
+      "company": "Driver Co",
+      "business": "+33987654321",
+      "phonebook_list": [{"id": 6, "name": "Drivers"}]
+    }
+  ]
+}

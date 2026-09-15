@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     client_secret: SecretStr | None = None
     verify_ssl: bool = True
     timeout_seconds: float = 30.0
+    allow_raw_numbers: bool = False
 
     @field_validator("base_url", "client_id", "client_secret", mode="before")
     @classmethod

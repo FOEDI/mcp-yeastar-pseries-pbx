@@ -14,6 +14,15 @@ def test_empty_environment_means_unconfigured(monkeypatch: pytest.MonkeyPatch) -
     assert settings.credentials_configured is False
 
 
+def test_raw_numbers_are_disabled_by_default_and_can_be_explicitly_enabled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("YEASTAR_ALLOW_RAW_NUMBERS", raising=False)
+    assert Settings().allow_raw_numbers is False
+    monkeypatch.setenv("YEASTAR_ALLOW_RAW_NUMBERS", "true")
+    assert Settings().allow_raw_numbers is True
+
+
 def test_period_rejects_reverse_range() -> None:
     with pytest.raises(ValidationError):
         Period(start=datetime(2026, 9, 2), end=datetime(2026, 9, 1))
