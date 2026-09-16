@@ -2,7 +2,7 @@
 
 A local, strictly read-only MCP server for analytics from one Yeastar P-Series PBX. It is intended to run over **stdio** on the same on-prem Linux VM as Hermes Agent. No MCP HTTP endpoint is created.
 
-> Status: V1 is complete against documentation-shaped mocks. Live PBX validation remains opt-in until Yeastar Client ID / Client Secret credentials are available.
+> Status: V1 is complete and has passed live read-only validation against a Yeastar P-Series Software Edition PBX running firmware `83.24.0.73`.
 
 ## Design goals
 
@@ -85,7 +85,7 @@ YEASTAR_ALLOW_RAW_NUMBERS=false
 
 `YEASTAR_BASE_URL` is the PBX web origin, without `/openapi`. Keep TLS verification enabled. For a private CA, install its CA certificate in the VM trust store. Set `YEASTAR_VERIFY_SSL=false` only as a temporary diagnostic on a trusted network.
 
-The `.env` file, tokens, and credentials are ignored by Git. Tokens live only in process memory. Because Yeastar carries `access_token` in the query string, do not enable full request-URL logging in production.
+The `.env` file, tokens, and credentials are ignored by Git. Tokens live only in process memory and are revoked through Yeastar's documented `del_token` endpoint when the client shuts down. HTTPX request-URL logging is suppressed by the stdio entry point because Yeastar carries `access_token` in the query string.
 
 ### Obtain Yeastar credentials later
 

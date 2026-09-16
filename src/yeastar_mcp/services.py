@@ -56,6 +56,8 @@ MAX_CDR_RECORDS = 100_000
 
 
 class ReadClient(Protocol):
+    async def aclose(self) -> None: ...
+
     async def get(
         self,
         endpoint: str,
@@ -1763,8 +1765,12 @@ class YeastarService:
             "DD-MM-YYYY": "%d-%m-%Y",
         }
         date_format = date_map.get(info.date_format or "", "%Y/%m/%d")
-        is_12_hour = bool(info.time_format and "hh" in info.time_format)
-        time_format = "%I:%M:%S %p" if is_12_hour else "%H:%M:%S"
+        time_spec = info.time_format or ""
+        has_meridiem = bool(
+            re.search(r"(?:^|\s)(?:AM|PM)$", info.system_time or "", re.IGNORECASE)
+            or re.search(r"(?:^|[^A-Za-z])[aA](?:[^A-Za-z]|$)", time_spec)
+        )
+        time_format = "%I:%M:%S %p" if has_meridiem else "%H:%M:%S"
         return value.strftime(f"{date_format} {time_format}")
 
     @staticmethod

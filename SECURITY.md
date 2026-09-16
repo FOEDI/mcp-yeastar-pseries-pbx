@@ -5,7 +5,7 @@
 This server is intentionally read-only:
 
 - Business code calls only HTTP `GET` endpoints.
-- OAuth token acquisition and refresh are the only internal `POST` requests.
+- OAuth token acquisition and refresh are the only internal `POST` requests; the client also calls the documented `GET del_token` authentication endpoint during shutdown to revoke its access token.
 - Twenty-two named tools are registered; no arbitrary URL/path/request tool exists.
 - MCP V1 uses local stdio and opens no listening socket.
 - MCP read-only/destructive annotations are advisory metadata; the structural endpoint/tool restrictions are the primary control.

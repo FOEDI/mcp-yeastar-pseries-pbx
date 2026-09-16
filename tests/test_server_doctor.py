@@ -70,8 +70,26 @@ async def test_server_blocks_raw_numbers_unless_runtime_opted_in() -> None:
 
 
 @pytest.mark.asyncio
+async def test_server_lifespan_closes_yeastar_client() -> None:
+    read_client = AsyncMock()
+    server = create_server(YeastarService(read_client))
+
+    assert server.settings.lifespan is not None
+    async with server.settings.lifespan(server):
+        read_client.aclose.assert_not_awaited()
+
+    read_client.aclose.assert_awaited_once_with()
+
+
+@pytest.mark.asyncio
 async def test_doctor_skips_pbx_checks_without_credentials() -> None:
-    report = await run_doctor(Settings(base_url="https://pbx.example.test:8088"))
+    report = await run_doctor(
+        Settings(
+            base_url="https://pbx.example.test:8088",
+            client_id=None,
+            client_secret=None,
+        )
+    )
     assert report.ok is True
     assert {check.status for check in report.checks if check.name.startswith("pbx_")} == {"SKIP"}
 

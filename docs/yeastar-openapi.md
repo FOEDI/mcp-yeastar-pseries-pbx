@@ -9,11 +9,13 @@ This document records the official contracts used by V1. All business calls are 
   - Returns `access_token` (normally 1,800 seconds) and `refresh_token` (normally 86,400 seconds).
 - `POST /openapi/v1.0/refresh_token`
   - JSON: latest `refresh_token`.
+- `GET /openapi/v1.0/del_token`
+  - Private authentication-lifecycle call used during client shutdown so short-lived diagnostics do not consume Yeastar's concurrent-token allowance.
 - Every request includes a non-empty `User-Agent` as required by Yeastar.
 - Authorized calls send `access_token` as a query parameter because that is the documented contract.
 - HTTP and network errors surface only status/path information and never include the token-bearing query string. A rejected refresh token is cleared and client credentials are retried once.
 
-Sources: [Get Access Token](https://help.yeastar.com/en/p-series-software-edition/developer-guide/get-access-token.html), [Refresh Access Token](https://help.yeastar.com/en/p-series-software-edition/developer-guide/refresh-access-token.html), [Request Structure](https://help.yeastar.com/en/p-series-software-edition/developer-guide/request-structure.html).
+Sources: [Get Access Token](https://help.yeastar.com/en/p-series-software-edition/developer-guide/get-access-token.html), [Refresh Access Token](https://help.yeastar.com/en/p-series-software-edition/developer-guide/refresh-access-token.html), [Revoke Access Token](https://help.yeastar.com/en/p-series-software-edition/developer-guide/revoke-access-token.html), [Request Structure](https://help.yeastar.com/en/p-series-software-edition/developer-guide/request-structure.html).
 
 ## Read endpoints used
 

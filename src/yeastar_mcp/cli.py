@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import json
+import logging
 
 from yeastar_mcp.client import YeastarClient
 from yeastar_mcp.doctor import run_doctor
@@ -20,7 +21,14 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _suppress_sensitive_http_logging() -> None:
+    """Prevent query-string access tokens from appearing in request URL logs."""
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+
+
 def _serve() -> None:
+    _suppress_sensitive_http_logging()
     settings = Settings()
     client = YeastarClient(settings)
     create_server(YeastarService(client, allow_raw_numbers=settings.allow_raw_numbers)).run(

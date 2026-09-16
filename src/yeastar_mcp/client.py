@@ -68,7 +68,22 @@ class YeastarClient:
         await self.aclose()
 
     async def aclose(self) -> None:
-        await self._http.aclose()
+        token = self._token.access_token if self._token is not None else None
+        self._token = None
+        try:
+            if token:
+                try:
+                    payload = await self._send(
+                        "GET",
+                        self._url("v1.0", "del_token"),
+                        params={"access_token": token},
+                    )
+                    self._validate_payload(payload)
+                except Exception:
+                    # Revocation is best-effort and must not mask the tool result.
+                    pass
+        finally:
+            await self._http.aclose()
 
     async def get(
         self,

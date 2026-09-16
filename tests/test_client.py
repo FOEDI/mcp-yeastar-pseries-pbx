@@ -1,9 +1,29 @@
+import asyncio
+import logging
+from unittest.mock import AsyncMock
+
 import httpx
 import pytest
 import respx
 
+from yeastar_mcp.cli import _suppress_sensitive_http_logging
 from yeastar_mcp.client import YeastarAPIError, YeastarClient
 from yeastar_mcp.settings import Settings
+
+
+def test_stdio_server_suppresses_http_request_url_logging() -> None:
+    httpx_logger = logging.getLogger("httpx")
+    httpcore_logger = logging.getLogger("httpcore")
+    previous = (httpx_logger.level, httpcore_logger.level)
+    try:
+        httpx_logger.setLevel(logging.INFO)
+        httpcore_logger.setLevel(logging.INFO)
+        _suppress_sensitive_http_logging()
+        assert httpx_logger.level >= logging.WARNING
+        assert httpcore_logger.level >= logging.WARNING
+    finally:
+        httpx_logger.setLevel(previous[0])
+        httpcore_logger.setLevel(previous[1])
 
 
 @pytest.fixture
@@ -13,6 +33,56 @@ def settings() -> Settings:
         client_id="client-id",
         client_secret="client-secret",
     )
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_client_revokes_access_token_when_closed(settings: Settings, fixture_json) -> None:
+    respx.post("https://pbx.example.test:8088/openapi/v1.0/get_token").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "errcode": 0,
+                "errmsg": "SUCCESS",
+                "access_token": "access",
+                "access_token_expire_time": 1800,
+            },
+        )
+    )
+    respx.get("https://pbx.example.test:8088/openapi/v1.0/system/information").mock(
+        return_value=httpx.Response(200, json=fixture_json("pbx_info.json"))
+    )
+    revoke = respx.get("https://pbx.example.test:8088/openapi/v1.0/del_token").mock(
+        return_value=httpx.Response(200, json={"errcode": 0, "errmsg": "SUCCESS"})
+    )
+    async with YeastarClient(settings) as client:
+        await client.get("system/information")
+    assert revoke.called
+    assert revoke.calls[0].request.url.params["access_token"] == "access"
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_client_closes_http_transport_when_revocation_is_cancelled(
+    settings: Settings, fixture_json
+) -> None:
+    respx.post("https://pbx.example.test:8088/openapi/v1.0/get_token").mock(
+        return_value=httpx.Response(
+            200,
+            json={"errcode": 0, "access_token": "access", "access_token_expire_time": 1800},
+        )
+    )
+    respx.get("https://pbx.example.test:8088/openapi/v1.0/system/information").mock(
+        return_value=httpx.Response(200, json=fixture_json("pbx_info.json"))
+    )
+    client = YeastarClient(settings)
+    await client.get("system/information")
+    client._send = AsyncMock(side_effect=asyncio.CancelledError())
+
+    with pytest.raises(asyncio.CancelledError):
+        await client.aclose()
+
+    assert client._http.is_closed is True
 
 
 @pytest.mark.asyncio

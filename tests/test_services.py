@@ -3,8 +3,34 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from yeastar_mcp.models import Extension, Period
+from yeastar_mcp.models import Extension, PBXInfo, Period
 from yeastar_mcp.services import YeastarService
+
+
+def test_lowercase_hh_without_meridiem_uses_live_pbx_24_hour_format() -> None:
+    info = PBXInfo(
+        name="PBX",
+        model="P-Series Software Edition",
+        firmware_version="83.24.0.73",
+        system_time="16/09/2026 13:44:49",
+        date_format="DD/MM/YYYY",
+        time_format="hh:mm:ss",
+    )
+    formatted = YeastarService._format_for_pbx(datetime(2026, 9, 16, 13, 45, 22), info)
+    assert formatted == "16/09/2026 13:45:22"
+
+
+def test_explicit_meridiem_in_live_pbx_clock_uses_12_hour_format() -> None:
+    info = PBXInfo(
+        name="PBX",
+        model="P-Series Software Edition",
+        firmware_version="83.24.0.73",
+        system_time="09/16/2026 01:44:49 PM",
+        date_format="MM/DD/YYYY",
+        time_format="hh:mm:ss",
+    )
+    formatted = YeastarService._format_for_pbx(datetime(2026, 9, 16, 13, 45, 22), info)
+    assert formatted == "09/16/2026 01:45:22 PM"
 
 
 @pytest.fixture

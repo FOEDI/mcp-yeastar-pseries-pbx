@@ -1,5 +1,7 @@
 """MCP tool registration. The exposed surface is intentionally read-only."""
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Annotated, Literal
 
@@ -71,6 +73,14 @@ ExampleLimit = Annotated[int, Field(ge=0, le=100)]
 
 def create_server(service: YeastarService) -> MCPServer:
     """Create an in-process-testable stdio MCP server."""
+
+    @asynccontextmanager
+    async def lifespan(_: MCPServer) -> AsyncIterator[None]:
+        try:
+            yield
+        finally:
+            await service.client.aclose()
+
     mcp = MCPServer(
         "yeastar-mcp",
         version=__version__,
@@ -78,6 +88,7 @@ def create_server(service: YeastarService) -> MCPServer:
             "Read-only analytics for one Yeastar P-Series PBX. Prefer aggregate tools. "
             "Call-level tools mask telephone numbers unless include_numbers=true is explicit."
         ),
+        lifespan=lifespan,
     )
 
     @mcp.tool(annotations=READ_ONLY)
