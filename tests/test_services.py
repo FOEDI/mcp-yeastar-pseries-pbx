@@ -7,6 +7,19 @@ from yeastar_mcp.models import Extension, PBXInfo, Period
 from yeastar_mcp.services import YeastarService
 
 
+def test_lowercase_hh_without_meridiem_parses_live_pbx_24_hour_timestamp() -> None:
+    info = PBXInfo(
+        name="PBX",
+        model="P-Series Software Edition",
+        firmware_version="83.24.0.73",
+        system_time="16/09/2026 10:17:50",
+        date_format="DD/MM/YYYY",
+        time_format="hh:mm:ss",
+    )
+    parsed = YeastarService._parse_time("16/09/2026 10:17:50", info)
+    assert parsed == datetime(2026, 9, 16, 10, 17, 50)
+
+
 def test_lowercase_hh_without_meridiem_uses_live_pbx_24_hour_format() -> None:
     info = PBXInfo(
         name="PBX",

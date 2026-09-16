@@ -1755,6 +1755,17 @@ class YeastarService:
         return values
 
     @staticmethod
+    def _uses_meridiem(info: PBXInfo | None, value: str | None = None) -> bool:
+        if info is None:
+            return False
+        time_spec = info.time_format or ""
+        return bool(
+            re.search(r"(?:^|\s)(?:AM|PM)$", value or "", re.IGNORECASE)
+            or re.search(r"(?:^|\s)(?:AM|PM)$", info.system_time or "", re.IGNORECASE)
+            or re.search(r"(?:^|[^A-Za-z])[aA](?:[^A-Za-z]|$)", time_spec)
+        )
+
+    @staticmethod
     def _format_for_pbx(value: datetime, info: PBXInfo) -> str:
         date_map = {
             "YYYY/MM/DD": "%Y/%m/%d",
@@ -1765,12 +1776,7 @@ class YeastarService:
             "DD-MM-YYYY": "%d-%m-%Y",
         }
         date_format = date_map.get(info.date_format or "", "%Y/%m/%d")
-        time_spec = info.time_format or ""
-        has_meridiem = bool(
-            re.search(r"(?:^|\s)(?:AM|PM)$", info.system_time or "", re.IGNORECASE)
-            or re.search(r"(?:^|[^A-Za-z])[aA](?:[^A-Za-z]|$)", time_spec)
-        )
-        time_format = "%I:%M:%S %p" if has_meridiem else "%H:%M:%S"
+        time_format = "%I:%M:%S %p" if YeastarService._uses_meridiem(info) else "%H:%M:%S"
         return value.strftime(f"{date_format} {time_format}")
 
     @staticmethod
@@ -1931,9 +1937,7 @@ class YeastarService:
             "DD-MM-YYYY": "%d-%m-%Y",
         }
         configured = (info.date_format if info else None) or "YYYY/MM/DD"
-        time_format = (
-            "%I:%M:%S %p" if info and info.time_format and "hh" in info.time_format else "%H:%M:%S"
-        )
+        time_format = "%I:%M:%S %p" if YeastarService._uses_meridiem(info, value) else "%H:%M:%S"
         try:
             return datetime.strptime(value, f"{date_formats[configured]} {time_format}")
         except (KeyError, ValueError) as exc:
